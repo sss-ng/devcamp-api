@@ -1,5 +1,9 @@
-const express = require("express");
 const dotenv = require("dotenv");
+// load env vars
+dotenv.config({ path: "./config/config.env" });
+
+
+const express = require("express");
 const colors = require("colors");
 const morgan = require("morgan");
 
@@ -13,8 +17,6 @@ const app = express();
 // Body Parser
 app.use(express.json())
 
-// load env vars
-dotenv.config({ path: "./config/config.env" });
 
 // connect to database
 connectDB();
