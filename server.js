@@ -1,5 +1,5 @@
-// load env vars
 const dotenv = require("dotenv");
+// load env vars
 dotenv.config({ path: "./config/config.env" });
 
 const express = require("express");
@@ -26,8 +26,8 @@ app.use(express.json());
 // connect to database
 connectDB();
 
-// enable cookies
-app.use(cookieParser)
+// cookie parser
+app.use(cookieParser())
 
 // use morgan logging if in development mode
 if (process.env.NODE_ENV === "development") {
