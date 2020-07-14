@@ -1,5 +1,5 @@
-const dotenv = require("dotenv");
 // load env vars
+const dotenv = require("dotenv");
 dotenv.config({ path: "./config/config.env" });
 
 
