@@ -21,7 +21,7 @@ router.use('/:bootcampId/courses', courseRouter)
 
 router
     .route("/")
-    .get(advancedResults(Bootcamp, 'courses'), getBootcamps)
+    .get(advancedResults(Bootcamp, 'courses'), getBootcamps) // note middleware
     .post(createBootcamp);
 
 router
