@@ -3,6 +3,7 @@ const advancedResults = require("../middleware/advancedResult");
 const User = require("../models/User");
 const ErrorResponse = require("../utils/errorResponse");
 const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
 
 // @desc     Register user
 // @route    POST  /api/v1/auth/register
@@ -61,6 +62,32 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     });
 });
 
+// @desc     Reset password
+// @route    PUT  /api/v1/auth/resetpassword/:resettoken
+// @access   Public
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+    // get hashed token
+    const resetPasswordToken = crypto.createHash("sha256").update(req.params.resettoken).digest("hex");
+
+    const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+        return next(new ErrorResponse("Invalid Token", 400));
+    }
+
+    // set new password
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    sendTokenResponse(user, 200, res);
+});
+
 // @desc     Forgot password
 // @route    POST  /api/v1/auth/forgotpassword
 // @access   Public
@@ -75,6 +102,26 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     const resetToken = user.getResetPasswordToken();
 
     await user.save({ validateBeforeSave: false });
+
+    const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetpassword/${resetToken}`;
+    const message = `Please make a PUT request to: \n\n ${resetUrl} \n\n to reset your password`;
+
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: "password reset token",
+            message,
+        });
+        res.status(200).json({ success: true, data: "Email sent" });
+    } catch (error) {
+        console.log(error);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+
+        await user.save({ validateBeforeSave: false });
+
+        return next(new ErrorResponse("Email could not be sent", 500));
+    }
 
     res.status(200).json({
         success: true,
@@ -100,5 +147,3 @@ const sendTokenResponse = (user, statusCode, res) => {
         token: token,
     });
 };
-
-
