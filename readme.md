@@ -1,6 +1,6 @@
 # Devcamp API
 
-> This is a backend api for a bootcamp sharing application 
+> This is a backend api for a bootcamp sharing application based on brad traversy's API Mastercourse 
 
 ## Usage
 Rename `config.copy.env` to `config.env` and add your settings.
